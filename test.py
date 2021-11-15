@@ -92,9 +92,3 @@ def open_oskar_data_local(filename):
     # oskar_df = reduce_area_of_df(oskar_df)
     return oskar_df
 
-
-list_of_dfs = []
-for filename in os.listdir('oskar_data'):
-    list_of_dfs.append(open_oskar_data_local('oskar_data/' + filename))
-oskar_df = pd.concat(list_of_dfs)
-print(min(oskar_df['sp_lon'].unique()))
