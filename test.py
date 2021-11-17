@@ -92,3 +92,7 @@ def open_oskar_data_local(filename):
     # oskar_df = reduce_area_of_df(oskar_df)
     return oskar_df
 
+print(1//2)
+print(2//2)
+print(3//2)
+print(7//2)
