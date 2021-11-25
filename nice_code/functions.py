@@ -149,10 +149,12 @@ def fetch_all_oskar_files():
         return pd.concat(df_list)
 
 
-def open_cygnss_csvs():
+def open_cygnss_csvs(lat_start, lat_end, long_start, long_end):
     df_list = []
-    for filename in os.listdir('../cygnss_data'):
-        df_list.append(pd.read_csv('../cygnss_data/' + filename))
+    for filename in os.listdir('../cygnss_data_whole_world'):
+        df = pd.read_csv('../cygnss_data_whole_world/' + filename)
+        df = reduce_area_of_sub_df(df, lat_start, lat_end, long_start, long_end)
+        df_list.append(df)
     if len(df_list) == 1:
         return df_list[0]
     else:
@@ -170,9 +172,10 @@ def prep_cygnss(cygnss_df):
     return reduce_area_of_df(cygnss_df)
 
 
-def get_era_5(filename):
+def get_era_5(filename, lat_start, lat_end, long_start, long_end):
     ds = xr.open_dataset(filename)
     era_5_df = ds.to_dataframe()
+    #era_5_df = reduce_area_of_df_era_5_multi(ds.to_dataframe(), lat_start, lat_end, long_start, long_end)
     index_long = era_5_df.index.levels[0]
     index_lat = era_5_df.index.levels[1]
     index_time = era_5_df.index.levels[2]
@@ -189,10 +192,16 @@ def get_era_5(filename):
     lat = lat.flatten()
     time = time.flatten()
 
-    df = pd.DataFrame({'sp_lon': long + 360, 'sp_lat': lat, 'hours_since_ref': time, 'u10': era_5_df["u10"].to_numpy()
-                          , 'v10': era_5_df["v10"].to_numpy()})
-    return reduce_area_of_df(df)
+    return pd.DataFrame({'sp_lon': long + 360, 'sp_lat': lat, 'hours_since_ref': time, 'u10': era_5_df["u10"].to_numpy()
+                            , 'v10': era_5_df["v10"].to_numpy()})
 
+
+def reduce_area_of_df_era_5_multi(df, lat_start, lat_end, long_start, long_end):
+    df = df[df.index.get_level_values(0) + 360 > lat_start]
+    df = df[df.index.get_level_values(0) + 360 < lat_end]
+    df = df[df.index.get_level_values(1) < long_end]
+    df = df[df.index.get_level_values(1) > long_start]
+    return df
 
 # SET AREA, Function Is called when extracting CYGNSS, OSKAR and ERA5
 def reduce_area_of_df(df):
@@ -257,6 +266,6 @@ def calculate_mss_anomaly_df(cygnss_df, era_5_df, oskar_df, interp_bias):
     mss_anomaly = (mss_from_cygnss - mss_from_wind_current) / mss_from_wind_current
 
     mss_ano_df = pd.DataFrame({'lon': lons_to_interpolate, 'lat': lats_to_interpolate, 'mss_anomaly': mss_anomaly,
-                               'delta': delta, 'nbrcs': cygnss_df['nbrcs_log'], 'wind': np.sqrt(u10**2 + v10**2),
-                               'current': np.sqrt(u_current**2 + v_current**2)})
+                               'delta': delta, 'nbrcs': cygnss_df['nbrcs_log'], 'wind': np.sqrt(u10 ** 2 + v10 ** 2),
+                               'current': np.sqrt(u_current ** 2 + v_current ** 2)})
     return mss_ano_df
