@@ -175,7 +175,8 @@ def prep_cygnss(cygnss_df):
 def get_era_5(filename, lat_start, lat_end, long_start, long_end):
     ds = xr.open_dataset(filename)
     era_5_df = ds.to_dataframe()
-    #era_5_df = reduce_area_of_df_era_5_multi(ds.to_dataframe(), lat_start, lat_end, long_start, long_end)
+    era_5_df = era_5_df.dropna()
+    # era_5_df = reduce_area_of_df_era_5_multi(ds.to_dataframe(), lat_start, lat_end, long_start, long_end)
     index_long = era_5_df.index.levels[0]
     index_lat = era_5_df.index.levels[1]
     index_time = era_5_df.index.levels[2]
@@ -192,8 +193,9 @@ def get_era_5(filename, lat_start, lat_end, long_start, long_end):
     lat = lat.flatten()
     time = time.flatten()
 
-    return pd.DataFrame({'sp_lon': long + 360, 'sp_lat': lat, 'hours_since_ref': time, 'u10': era_5_df["u10"].to_numpy()
-                            , 'v10': era_5_df["v10"].to_numpy()})
+    return pd.DataFrame({'sp_lon': long + 360, 'sp_lat': lat, 'hours_since_ref': time,
+                         'u10': era_5_df["u10"].to_numpy(),
+                         'v10': era_5_df["v10"].to_numpy()})
 
 
 def reduce_area_of_df_era_5_multi(df, lat_start, lat_end, long_start, long_end):
@@ -202,6 +204,7 @@ def reduce_area_of_df_era_5_multi(df, lat_start, lat_end, long_start, long_end):
     df = df[df.index.get_level_values(1) < long_end]
     df = df[df.index.get_level_values(1) > long_start]
     return df
+
 
 # SET AREA, Function Is called when extracting CYGNSS, OSKAR and ERA5
 def reduce_area_of_df(df):
@@ -222,6 +225,14 @@ def reduce_area_of_sub_df(df, lat_start, lat_end, long_start, long_end):
     return df[df.sp_lon < long_end]
 
 
+@np.vectorize
+def caluate_mss_towards(u):
+    if u <= 3.49:
+        return 0.0035 * (u + 0.62)
+    else:
+        return 0.0035 * (6 * np.log(u) - 3.39)
+
+
 def calculate_mss_anomaly_df(cygnss_df, era_5_df, oskar_df, interp_bias):
     # Get Wind For CYGNSS
     interp_u10 = LinearNDInterpolator(list(zip(era_5_df['sp_lon'], era_5_df['sp_lat'], era_5_df['hours_since_ref'])),
@@ -235,6 +246,8 @@ def calculate_mss_anomaly_df(cygnss_df, era_5_df, oskar_df, interp_bias):
     times_to_interpolate = cygnss_df["hours_since_ref"].to_numpy()
     u10 = interp_u10(lons_to_interpolate, lats_to_interpolate, times_to_interpolate)
     v10 = interp_v10(lons_to_interpolate, lats_to_interpolate, times_to_interpolate)
+
+    total_wind = np.sqrt(u10 ** 2 + v10 ** 2)
 
     # GET CURRENT FOR CYGNSS
 
@@ -257,6 +270,10 @@ def calculate_mss_anomaly_df(cygnss_df, era_5_df, oskar_df, interp_bias):
     bot_frac = delta ** 3 + 18.161 * delta ** 2 - 117.602 * delta + 706.9
     mss_from_wind_current = top_frac / bot_frac
 
+    mss_from_wind_towards = caluate_mss_towards(total_wind)
+
+    mss_from_delta_towards = caluate_mss_towards(delta)
+
     fresnell_sqrd = cygnss_df['fresnel_coeff'].to_numpy() ** 2
 
     biases = interp_bias(cygnss_df['sp_inc_angle'], delta)
@@ -265,7 +282,14 @@ def calculate_mss_anomaly_df(cygnss_df, era_5_df, oskar_df, interp_bias):
 
     mss_anomaly = (mss_from_cygnss - mss_from_wind_current) / mss_from_wind_current
 
-    mss_ano_df = pd.DataFrame({'lon': lons_to_interpolate, 'lat': lats_to_interpolate, 'mss_anomaly': mss_anomaly,
-                               'delta': delta, 'nbrcs': cygnss_df['nbrcs_log'], 'wind': np.sqrt(u10 ** 2 + v10 ** 2),
-                               'current': np.sqrt(u_current ** 2 + v_current ** 2)})
+    mss_anomaly_towards = (mss_from_cygnss - mss_from_wind_towards) / mss_from_wind_towards
+
+    mss_anomaly_towards_delta = (mss_from_cygnss - mss_from_delta_towards) / mss_from_delta_towards
+
+    mss_ano_df = pd.DataFrame({'lon': lons_to_interpolate, 'lat': lats_to_interpolate,
+                               'mss_anomaly_mostafa': mss_anomaly, 'mss_anomaly_towards': mss_anomaly_towards,
+                               'mss_anomaly_towards_delta': mss_anomaly_towards_delta,
+                               'nbrcs': cygnss_df['nbrcs_log'], 'wind_u10': u10, 'wind_v10': v10,
+                               'current_u': u_current, 'current_v': v_current, 'biases': biases,
+                               'fresnel': cygnss_df['fresnel_coeff']})
     return mss_ano_df
