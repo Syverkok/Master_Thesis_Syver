@@ -27,7 +27,7 @@ for i in tqdm(range(len(lats_north) - 1)):
             print("nice")
             mss_ano_df = calculate_mss_anomaly_df(sub_cyg, sub_era5, sub_osk, interp_bias)
             # REMEMBER TO CHANGE FOLDER
-            mss_ano_df.to_csv("../-40_-20_220_260/" + str(lat_start) + str(lat_end) + str(long_start) + str(long_end) +
+            mss_ano_df.to_csv("../test_mss/" + str(lat_start) + str(lat_end) + str(long_start) + str(long_end) +
                               ".csv", index=False)
 
         else:

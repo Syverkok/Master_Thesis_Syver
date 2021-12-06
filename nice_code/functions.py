@@ -278,17 +278,14 @@ def calculate_mss_anomaly_df(cygnss_df, era_5_df, oskar_df, interp_bias):
 
     biases = interp_bias(cygnss_df['sp_inc_angle'], delta)
 
-    mss_from_cygnss = fresnell_sqrd / (10 ** ((cygnss_df['nbrcs_log'] - biases) / 10))
+    #mss_from_cygnss = fresnell_sqrd / (10 ** ((cygnss_df['nbrcs_log'] - biases) / 10))
 
-    mss_anomaly = (mss_from_cygnss - mss_from_wind_current) / mss_from_wind_current
-
-    mss_anomaly_towards = (mss_from_cygnss - mss_from_wind_towards) / mss_from_wind_towards
-
-    mss_anomaly_towards_delta = (mss_from_cygnss - mss_from_delta_towards) / mss_from_delta_towards
+    mss_from_cygnss = fresnell_sqrd / (10 ** ((cygnss_df['nbrcs_log'] - 0) / 10))
 
     mss_ano_df = pd.DataFrame({'lon': lons_to_interpolate, 'lat': lats_to_interpolate,
-                               'mss_anomaly_mostafa': mss_anomaly, 'mss_anomaly_towards': mss_anomaly_towards,
-                               'mss_anomaly_towards_delta': mss_anomaly_towards_delta,
+                               'mss_cygnss': mss_from_cygnss, 'mss_wind_current': mss_from_wind_current,
+                               'mss_towards_wind': mss_from_wind_towards,
+                               'mss_towards_delta': mss_from_delta_towards,
                                'nbrcs': cygnss_df['nbrcs_log'], 'wind_u10': u10, 'wind_v10': v10,
                                'current_u': u_current, 'current_v': v_current, 'biases': biases,
                                'fresnel': cygnss_df['fresnel_coeff']})
