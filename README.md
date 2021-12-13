@@ -1,4 +1,4 @@
-# prosjektoppgave
+# Prosjektoppgave
 
 As the datafiles are to big for github repo, you have to download it yourself to use the code.
 The CYGNSS data can easily be fetched using code here,
