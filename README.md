@@ -6,4 +6,4 @@ the rest of the data are fetch from:
 Wind Data : https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels?tab=form
 Current Data : https://podaac.jpl.nasa.gov/dataset/OSCAR_L4_OC_third-deg
 
-Almost all code are developed by Syver during winter semester 2021
+All code are developed by Syver during winter semester 2021 ( Except some codelines from Andreas to help fetch CYGNSS data)
