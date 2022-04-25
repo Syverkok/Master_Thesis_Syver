@@ -1,0 +1,18 @@
+[[Model]]
+    Model(katzberg)
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 37
+    # data points      = 17669522
+    # variables        = 5
+    chi-square         = 323.366841
+    reduced chi-square = 1.8301e-05
+    Akaike info crit   = -1.9275e+08
+    Bayesian info crit = -1.9275e+08
+##  Warning: uncertainties could not be estimated:
+[[Variables]]
+    c_1:  0.00302865 +/-        nan (nan%) (init = 0.0035)
+    c_2:  0.57295565 +/-        nan (nan%) (init = 1)
+    c_3:  0.54912378 +/-        nan (nan%) (init = 0.62)
+    c_4:  4.02741762 +/-        nan (nan%) (init = 6)
+    c_5: -2.34955144 +/-        nan (nan%) (init = -3.39)
