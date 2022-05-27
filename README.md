@@ -1,6 +1,6 @@
 ## **Master Thesis Reporsitory**
 
-As the datafiles are to big for github repo, you have to download it yourself to use the code.
+Since the datafiles are too big for GitHub repository, data files must be downloaded.
 
 **Scripts for data retrival:**
 
