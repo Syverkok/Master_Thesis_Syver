@@ -5,7 +5,9 @@ As the datafiles are to big for github repo, you have to download it yourself to
 **Scripts for data retrival:**
 
 fetch_era5_globally.ipynb
+
 fetch_mss_globally.ipynb
+
 fetch_oskar_globally.ipynb
 
 **Script for data interpolation:**
